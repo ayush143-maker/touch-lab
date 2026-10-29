@@ -53,3 +53,9 @@ No metric or combination of metrics is claimed to uniquely identify a person. Re
 - `docs/RAW-PROPERTIES.md` — raw-property inventory
 - `docs/METRICS.md` — calculated metric formulas
 - `docs/TEST-REPORT.md` — test coverage and device-validation boundaries
+
+## Experimental local touch classifier
+
+Touch Lab now includes a browser-only, labeled **thumb-vs-index/other** k-NN experiment with grouped hold-out-batch evaluation. It trains only after examples are captured or imported; it does not ship with a fabricated 90% score. See [docs/ML-MODEL.md](docs/ML-MODEL.md) for the dataset modality caveat, evaluation approach, and privacy boundaries.
+
+Public research: [CapFingerId](https://github.com/interactionlab/CapFingerId) reports 92%+ left-vs-right thumb classification from capacitive images. A normal webpage cannot access those images, so that result is not the accuracy of this app's model.

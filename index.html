@@ -8,6 +8,7 @@
   <title>Touch Lab — Raw Touch Signal Research</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="app.js"></script>
+  <script defer src="model.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -184,8 +185,66 @@
         </div>
       </section>
 
+      <section class="section-wrap model-section" aria-labelledby="model-title">
+        <div class="section-head">
+          <div class="section-label"><span>06</span><h2 id="model-title">Touch classifier</h2></div>
+          <div class="section-caption">LOCAL TRAINING · LABELED DATA ONLY</div>
+        </div>
+        <p class="section-intro model-intro">Experimental thumb-vs-index/other classifier. It learns from touch examples you explicitly label on this device; it does not identify a person or prove ownership.</p>
+        <div class="model-grid">
+          <article class="panel model-panel">
+            <span class="panel-kicker">01 / COLLECT LABELS</span>
+            <h3>Record a labeled batch</h3>
+            <p class="model-copy">Choose one label, then make several separate touches on the large Touch surface above using only that finger. Finish the batch before switching labels. Repeat in separate batches to create real held-out tests.</p>
+            <div class="model-actions">
+              <button id="modelStartThumb" class="button button-primary" type="button">Record thumb</button>
+              <button id="modelStartOther" class="button button-secondary" type="button">Record index / other</button>
+            </div>
+            <div class="model-actions">
+              <button id="modelStartPredict" class="button button-secondary" type="button">Predict unlabeled batch</button>
+              <button id="modelFinishBatch" class="button button-quiet" type="button" disabled>Finish batch</button>
+            </div>
+            <div id="modelBatchStatus" class="model-status" aria-live="polite">No model batch active. Start with a labeled batch.</div>
+            <div class="model-rules">
+              <strong>For a useful test</strong>
+              <p>Keep the phone, browser, grip, and gesture type consistent. Aim for 8–15 contacts per batch and at least 5 distinct batches per label. Do not mix fingers inside one labeled batch.</p>
+            </div>
+          </article>
+          <article class="panel model-panel">
+            <span class="panel-kicker">02 / TRAIN & MEASURE</span>
+            <h3>Training set</h3>
+            <div class="model-count-grid">
+              <div><span>CONTACTS</span><strong id="modelExampleCount">0</strong></div>
+              <div><span>THUMB</span><strong id="modelThumbCount">0</strong></div>
+              <div><span>INDEX / OTHER</span><strong id="modelOtherCount">0</strong></div>
+              <div><span>LABELED BATCHES</span><strong id="modelBatchCount">0</strong></div>
+            </div>
+            <div class="model-actions">
+              <button id="modelTrain" class="button button-primary" type="button">Train & evaluate</button>
+              <button id="modelClear" class="button button-quiet" type="button">Clear dataset</button>
+            </div>
+            <div class="model-actions">
+              <button id="modelExport" class="button button-secondary" type="button">Export features JSON</button>
+              <label class="button button-secondary model-import-label" for="modelImport">Import features JSON<input id="modelImport" type="file" accept="application/json,.json"></label>
+            </div>
+            <div id="modelResults" class="model-results" aria-live="polite">No model trained. Collect labeled examples first.</div>
+          </article>
+        </div>
+        <article class="panel model-prediction-panel">
+          <div class="panel-kicker">03 / PREDICTIONS</div>
+          <h3>Recent predictions</h3>
+          <p class="model-copy">Neighbor agreement is a rough model diagnostic, not a calibrated probability or biometric confidence score.</p>
+          <div id="modelPredictions" class="model-predictions" aria-live="polite">No predictions yet.</div>
+        </article>
+        <div class="model-research-note">
+          <strong>Why no preloaded 90% score?</strong>
+          <p>The public <a href="https://github.com/interactionlab/CapFingerId" target="_blank" rel="noopener noreferrer">CapFingerId dataset</a> contains capacitive images; the reported 92%+ result is for left-vs-right thumb classification from those images. This webpage receives standard Pointer/Touch event properties, not those capacitive images, so those model weights cannot be honestly applied here. The model above trains on your labeled browser-visible features and reports only its own held-out-batch result.</p>
+          <p>Reference: <a href="https://doi.org/10.1145/3301275.3302295" target="_blank" rel="noopener noreferrer">Le, Mayer & Henze, IUI 2019</a>.</p>
+        </div>
+      </section>
+
       <section class="section-wrap protocol-section" aria-labelledby="protocol-title">
-        <div class="section-head"><div class="section-label"><span>06</span><h2 id="protocol-title">Research protocol</h2></div><div class="section-caption">REPEATABLE TRIALS · CONTROLLED CONDITIONS</div></div>
+        <div class="section-head"><div class="section-label"><span>07</span><h2 id="protocol-title">Research protocol</h2></div><div class="section-caption">REPEATABLE TRIALS · CONTROLLED CONDITIONS</div></div>
         <div class="protocol-grid">
           <article class="panel protocol-panel">
             <span class="panel-kicker">SUGGESTED SEQUENCE</span><h3>Run the same gesture more than once</h3>
