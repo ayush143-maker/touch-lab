@@ -3,277 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b10">
-  <meta name="description" content="A local-first touchscreen event research workbench for observing browser-exposed pointer and touch signals.">
-  <title>Touch Lab — Raw Touch Signal Research</title>
+  <meta name="theme-color" content="#f6f5f0">
+  <meta name="description" content="A simple, private touch experiment that learns thumb-like and index/other touch patterns on your device.">
+  <title>Touch Lab — Finger Pattern</title>
   <link rel="stylesheet" href="styles.css">
-  <script defer src="app.js"></script>
   <script defer src="model.js"></script>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="page-shell">
     <header class="topbar">
-      <a class="brand" href="#top" aria-label="Touch Lab home">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-        <span class="brand-name">TOUCH<span>LAB</span></span>
+      <a class="brand" href="#home" aria-label="Touch Lab home">
+        <span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>touch<span class="brand-light">lab</span></span>
       </a>
-      <div class="topbar-right">
-        <span class="privacy-pill"><span class="privacy-dot"></span>LOCAL ONLY</span>
-        <span id="sessionBadge" class="session-badge" data-state="idle">IDLE</span>
-      </div>
+      <div class="privacy"><span class="privacy-dot"></span> PRIVATE BY DESIGN</div>
     </header>
 
-    <main id="top">
-      <section class="intro section-wrap">
-        <div class="eyebrow"><span class="eyebrow-line"></span> INPUT SIGNALS / FIELD STUDY 001</div>
-        <div class="intro-grid">
+    <main id="home">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span>FIELD NOTE 01</span><span class="eyebrow-line"></span> TOUCH PATTERNS</p>
+          <h1>Which finger<br><em>touched?</em></h1>
+          <p class="hero-subtitle">Touch the area below. Touch Lab learns patterns from your own labelled examples, right on this device.</p>
+        </div>
+        <aside class="readout" aria-live="polite">
+          <div class="readout-top"><span class="readout-label">LATEST TOUCH</span><span id="liveDot" class="readout-dot"></span></div>
+          <div id="fingerResult" class="finger-result">Ready</div>
+          <p id="fingerDetail" class="finger-detail">Touch the test area to begin.</p>
+          <div class="readout-rule"></div>
+          <div class="readout-bottom"><span id="modelState">NOT CALIBRATED</span><span id="touchCount">00 TOUCHES</span></div>
+        </aside>
+      </section>
+
+      <section class="touch-section" aria-labelledby="surface-title">
+        <div class="section-top">
           <div>
-            <h1>Raw touch.<br><em>Visible data.</em></h1>
-            <p class="intro-copy">A browser-level workbench for observing pointer and touch events, measuring repeatable motion, and inspecting what the platform actually exposes.</p>
+            <p class="eyebrow small">01 / INTERACT</p>
+            <h2 id="surface-title">Touch surface</h2>
           </div>
-          <div class="intro-note">
-            <span class="note-index">RESEARCH NOTE 01</span>
-            <p>This is not a fingerprint scanner. Signals are browser-reported, device-dependent, and may be missing, quantized, or synthetic.</p>
+          <span id="surfaceHint" class="surface-hint">PRESS · MOVE · RELEASE</span>
+        </div>
+        <div id="touchSurface" class="touch-surface" role="application" aria-label="Touch and move inside this area">
+          <div class="surface-grid" aria-hidden="true"></div>
+          <div class="target-ring" aria-hidden="true"><span></span><i></i></div>
+          <div id="surfacePrompt" class="surface-prompt">
+            <span class="prompt-mark" aria-hidden="true">＋</span>
+            <strong>Touch anywhere</strong>
+            <span>Hold, tap, or draw a short line</span>
           </div>
+          <div class="surface-footer"><span>LIVE INPUT</span><span id="surfacePosition">— / —</span></div>
+          <div id="touchFeedback" class="touch-feedback" aria-hidden="true"></div>
         </div>
-        <div class="hero-meta">
-          <span>NO SDKs</span><span>NO NETWORK REQUESTS</span><span>NO REMOTE STORAGE</span>
-        </div>
+        <p class="under-surface"><span class="tiny-check">✓</span> Touch data stays on this device. Nothing is uploaded.</p>
       </section>
 
-      <section class="section-wrap lab-section" aria-labelledby="surface-title">
-        <div class="section-head">
-          <div class="section-label"><span>01</span><h2 id="surface-title">Touch surface</h2></div>
-          <div class="section-caption">PRESS / HOLD / MOVE / RELEASE</div>
+      <section class="calibration-section" aria-labelledby="calibration-title">
+        <div class="section-top">
+          <div>
+            <p class="eyebrow small">02 / PERSONALISE</p>
+            <h2 id="calibration-title">Teach your phone</h2>
+          </div>
+          <span class="batch-count"><span id="exampleCount">0</span> examples saved</span>
         </div>
-
-        <div class="surface-panel panel">
-          <div class="surface-toolbar">
-            <div class="surface-status"><span class="signal-dot"></span><span id="surfaceStatus">Capture is paused</span></div>
-            <div class="surface-tools">
-              <label class="toggle-control"><input id="trailToggle" type="checkbox" checked><span class="toggle-track"></span><span>Trail</span></label>
-              <button id="clearTrailButton" class="text-button" type="button">Clear trail</button>
-            </div>
+        <p class="calibration-copy">Record one finger at a time. Make several separate touches, then finish that batch. Repeat with the other label.</p>
+        <div class="calibration-card">
+          <div class="calibration-mode">
+            <span class="mode-number">A</span>
+            <div class="mode-copy"><strong>Thumb</strong><span>Use your thumb only</span></div>
+            <button id="thumbButton" class="choice-button" type="button">Collect</button>
           </div>
-          <div id="touchSurface" class="touch-surface" aria-label="Interactive touch test area" role="application">
-            <canvas id="trailCanvas" aria-hidden="true"></canvas>
-            <div id="pointerLayer" class="pointer-layer" aria-hidden="true"></div>
-            <div id="surfacePrompt" class="surface-prompt">
-              <span class="crosshair" aria-hidden="true"></span>
-              <strong>Touch anywhere in this field</strong>
-              <span>Start a session to record raw event data</span>
-            </div>
-            <div class="surface-coordinates"><span>LIVE COORDINATES</span><strong id="liveCoordinates">— / —</strong></div>
+          <div class="calibration-divider"></div>
+          <div class="calibration-mode">
+            <span class="mode-number">B</span>
+            <div class="mode-copy"><strong>Index / other</strong><span>Use your index finger only</span></div>
+            <button id="otherButton" class="choice-button" type="button">Collect</button>
           </div>
-          <div class="surface-foot">
-            <span>CSS PIXELS · ORIGIN TOP LEFT</span>
-            <span id="surfaceDimensions">SURFACE — × —</span>
-          </div>
-        </div>
-
-        <div class="control-grid">
-          <div class="panel control-panel">
-            <div class="panel-kicker">SESSION CONTROLS</div>
-            <div class="button-row">
-              <button id="startButton" class="button button-primary" type="button"><span class="button-symbol">▶</span> Start</button>
-              <button id="stopButton" class="button button-secondary" type="button" disabled><span class="button-symbol">Ⅱ</span> Stop</button>
-            </div>
-            <div class="button-row">
-              <button id="resetButton" class="button button-secondary" type="button">Reset session</button>
-              <button id="clearButton" class="button button-quiet" type="button">Clear data</button>
-            </div>
-            <p class="control-hint">Captured data stays in this page's memory until you export it or clear it. Refreshing the page discards the session.</p>
-          </div>
-          <div class="panel trial-panel">
-            <div class="panel-kicker">TRIAL MARKER</div>
-            <label class="field-label" for="trialLabel">Trial label</label>
-            <input id="trialLabel" class="text-input" type="text" maxlength="80" value="Trial 01" placeholder="e.g. slow drag / attempt 2">
-            <label class="field-label" for="protocolSelect">Protocol</label>
-            <select id="protocolSelect" class="text-input">
-              <option value="single-tap">Single tap</option>
-              <option value="long-press">Long press</option>
-              <option value="slow-drag">Slow drag</option>
-              <option value="fast-drag">Fast drag</option>
-              <option value="small-circles">Small circles</option>
-              <option value="straight-line">Straight line</option>
-              <option value="repeated-taps">Repeated taps</option>
-              <option value="multi-touch">Multi-touch</option>
-              <option value="custom">Custom / freeform</option>
-            </select>
-            <div class="button-row">
-              <button id="beginTrialButton" class="button button-secondary" type="button">Begin trial</button>
-              <button id="endTrialButton" class="button button-quiet" type="button" disabled>End trial</button>
-            </div>
-            <p id="trialStatus" class="control-hint">No active trial. Mark trials to compare labeled segments in exported data.</p>
+          <div class="batch-panel">
+            <div class="batch-status-line"><span id="batchIndicator" class="batch-indicator"></span><span id="batchStatus">No collection active</span></div>
+            <button id="finishBatchButton" class="finish-button" type="button" disabled>Finish batch <span aria-hidden="true">↗</span></button>
           </div>
         </div>
-
-        <div class="quick-stats" aria-label="Session counters">
-          <div class="quick-stat"><span>EVENTS</span><strong id="quickEventCount">0</strong><small>Pointer + touch log</small></div>
-          <div class="quick-stat"><span>SAMPLES</span><strong id="quickSampleCount">0</strong><small>Derived pointer samples</small></div>
-          <div class="quick-stat"><span>CONTACTS</span><strong id="quickContactCount">0</strong><small>Completed / active</small></div>
-          <div class="quick-stat"><span>ELAPSED</span><strong id="quickElapsed">00:00</strong><small>Session clock</small></div>
+        <div class="model-footer">
+          <div class="model-progress"><div class="progress-track"><span id="progressFill"></span></div><span id="progressText">Start with a thumb batch</span></div>
+          <button id="clearButton" class="quiet-button" type="button">Reset calibration</button>
         </div>
+        <details class="advanced">
+          <summary>How this works</summary>
+          <p>Touch Lab compares your contact duration, movement, reported contact size, pressure and other browser-visible signals. It needs labelled examples because a webpage cannot directly read which physical finger made a touch. Predictions are estimates, not identity verification.</p>
+          <p id="evaluationText">A held-out-batch score will appear after enough examples have been collected. It may not generalise to another phone or session.</p>
+          <button id="exportButton" class="export-button" type="button">Export local training data (.json)</button>
+        </details>
       </section>
 
-      <section class="section-wrap metrics-section" aria-labelledby="metrics-title">
-        <div class="section-head">
-          <div class="section-label"><span>02</span><h2 id="metrics-title">Live metrics</h2></div>
-          <div class="section-caption">DERIVED VALUES · NOT CALIBRATED MEASUREMENTS</div>
-        </div>
-        <p class="section-intro">Values update from captured pointer samples. Every card shows the number of valid observations used; unavailable inputs remain unavailable rather than being guessed.</p>
-        <div class="metric-group"><div class="metric-group-head"><h3>Contact & timing</h3><span>01 — 04</span></div><div id="contactMetrics" class="metric-grid"></div></div>
-        <div class="metric-group"><div class="metric-group-head"><h3>Motion & trajectory</h3><span>05 — 12</span></div><div id="motionMetrics" class="metric-grid"></div></div>
-        <div class="metric-group"><div class="metric-group-head"><h3>Sampling & pauses</h3><span>13 — 17</span></div><div id="samplingMetrics" class="metric-grid"></div></div>
-        <div class="metric-group"><div class="metric-group-head"><h3>Pressure & contact dimensions</h3><span>18 — 24</span></div><div id="contactSignalMetrics" class="metric-grid"></div></div>
-        <div class="metric-group"><div class="metric-group-head"><h3>Multi-touch & repeatability</h3><span>25 — 30</span></div><div id="repeatMetrics" class="metric-grid"></div></div>
-        <div class="quality-strip panel">
-          <div><span class="quality-label">MISSING POINTER FIELDS</span><strong id="missingPercent">—</strong></div>
-          <div><span class="quality-label">VALID POINTER SAMPLES</span><strong id="validSamples">0</strong></div>
-          <div><span class="quality-label">MAX SIMULTANEOUS POINTERS</span><strong id="maxPointers">0</strong></div>
-          <p>Missingness is calculated over the tracked pointer-property set, not every possible browser-internal field.</p>
-        </div>
-      </section>
-
-      <section class="section-wrap charts-section" aria-labelledby="charts-title">
-        <div class="section-head">
-          <div class="section-label"><span>03</span><h2 id="charts-title">Signal plots</h2></div>
-          <div class="section-caption">SESSION SAMPLE HISTORY</div>
-        </div>
-        <div class="charts-grid">
-          <article class="panel chart-panel"><div class="chart-head"><div><span class="chart-index">PLOT 01</span><h3>Position trajectory</h3></div><span class="chart-unit">X / Y · CSS px</span></div><canvas id="trajectoryChart" class="chart-canvas" height="190" aria-label="Position trajectory chart"></canvas><p class="chart-foot">Connected sample positions; axes are local surface coordinates.</p></article>
-          <article class="panel chart-panel"><div class="chart-head"><div><span class="chart-index">PLOT 02</span><h3>Speed over time</h3></div><span class="chart-unit">px / s</span></div><canvas id="speedChart" class="chart-canvas" height="190" aria-label="Speed over time chart"></canvas><p class="chart-foot">Segment distance divided by positive timestamp difference.</p></article>
-          <article class="panel chart-panel"><div class="chart-head"><div><span class="chart-index">PLOT 03</span><h3>Reported pressure</h3></div><span class="chart-unit">0–1 nominal range</span></div><canvas id="pressureChart" class="chart-canvas" height="190" aria-label="Reported pressure chart"></canvas><p class="chart-foot">Browser-reported values only; not force in newtons.</p></article>
-          <article class="panel chart-panel"><div class="chart-head"><div><span class="chart-index">PLOT 04</span><h3>Contact dimensions</h3></div><span class="chart-unit">CSS px</span></div><canvas id="dimensionsChart" class="chart-canvas" height="190" aria-label="Contact dimensions chart"></canvas><p class="chart-foot">Reported pointer width and height; these are not electrode dimensions.</p></article>
-        </div>
-      </section>
-
-      <section class="section-wrap raw-section" aria-labelledby="raw-title">
-        <div class="section-head">
-          <div class="section-label"><span>04</span><h2 id="raw-title">Raw event inspector</h2></div>
-          <div class="section-caption">UNNORMALIZED FIELDS + NULLS PRESERVED</div>
-        </div>
-        <div class="raw-layout">
-          <article class="panel timeline-panel">
-            <div class="panel-header"><div><span class="panel-kicker">EVENT TIMELINE</span><h3>Captured events</h3></div><span id="timelineCount" class="count-chip">0</span></div>
-            <p class="subtle-copy">Newest events appear first here. Select any row to inspect its complete saved snapshot.</p>
-            <div id="eventTimeline" class="event-timeline"><div class="empty-state">No events captured yet.</div></div>
-          </article>
-          <article class="panel inspector-panel">
-            <div class="panel-header inspector-header"><div><span class="panel-kicker">SELECTED RECORD</span><h3 id="selectedEventTitle">Waiting for an event</h3></div><button id="copySelectedButton" class="text-button" type="button" disabled>Copy JSON</button></div>
-            <details open class="json-details"><summary>Inspect serialized event <span>JSON</span></summary><pre id="rawInspector" class="json-output">Select an event from the timeline to inspect its raw values.</pre></details>
-            <div class="inspector-actions"><button id="copyAllJsonButton" class="button button-secondary" type="button">Copy session JSON</button><button id="downloadJsonButton" class="button button-primary" type="button">Export JSON ↓</button><button id="downloadCsvButton" class="button button-secondary" type="button">Export CSV ↓</button></div>
-            <p class="control-hint">JSON includes raw event records, touch lists, coalesced / predicted samples when exposed, derived samples, contacts, trials, metrics, and device context. CSV includes flattened rows plus a complete JSON cell per record.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-wrap capabilities-section" aria-labelledby="capabilities-title">
-        <div class="section-head">
-          <div class="section-label"><span>05</span><h2 id="capabilities-title">Capability report</h2></div>
-          <div class="section-caption">API AVAILABILITY ≠ OBSERVED DATA</div>
-        </div>
-        <div class="panel capability-panel">
-          <div class="capability-summary"><div><span class="panel-kicker">RUNTIME</span><h3>What this browser exposes</h3><p>Static API checks are separated from properties actually observed in your session.</p></div><button id="selfTestButton" class="button button-secondary" type="button">Run local self-check</button></div>
-          <div id="selfTestResults" class="self-test-results" aria-live="polite">Self-check has not run.</div>
-          <div class="table-wrap"><table class="capability-table"><thead><tr><th>Property / API</th><th>API check</th><th>Session observation</th><th>Non-null count</th></tr></thead><tbody id="capabilityTableBody"><tr><td colspan="4">Waiting for capability scan…</td></tr></tbody></table></div>
-          <div class="legend-row"><span class="status-tag observed">OBSERVED</span><span class="status-tag supported">SUPPORTED · NOT SEEN</span><span class="status-tag unavailable">UNAVAILABLE / NOT OBSERVED</span><span class="legend-note">Status may change during a session.</span></div>
-        </div>
-        <div class="device-grid">
-          <article class="panel device-panel"><span class="panel-kicker">DEVICE CONTEXT</span><h3>Standard browser APIs</h3><div id="deviceInfo" class="device-info"></div></article>
-          <article class="panel device-panel"><span class="panel-kicker">COLLECTION BOUNDARIES</span><h3>What this page cannot see</h3><ul class="boundary-list"><li>Raw capacitive electrode matrices or sensor voltages.</li><li>Fingerprint ridges, biometric templates, or hardware touch-controller data.</li><li>Physical force calibration from a browser pressure value.</li><li>Reliable person identity from a gesture or set of browser signals.</li><li>Signals blocked, normalized, quantized, or synthesized by the OS/browser.</li></ul></article>
-        </div>
-      </section>
-
-      <section class="section-wrap model-section" aria-labelledby="model-title">
-        <div class="section-head">
-          <div class="section-label"><span>06</span><h2 id="model-title">Touch classifier</h2></div>
-          <div class="section-caption">LOCAL TRAINING · LABELED DATA ONLY</div>
-        </div>
-        <p class="section-intro model-intro">Experimental thumb-vs-index/other classifier. It learns from touch examples you explicitly label on this device; it does not identify a person or prove ownership.</p>
-        <div class="model-grid">
-          <article class="panel model-panel">
-            <span class="panel-kicker">01 / COLLECT LABELS</span>
-            <h3>Record a labeled batch</h3>
-            <p class="model-copy">Choose one label, then make several separate touches on the large Touch surface above using only that finger. Finish the batch before switching labels. Repeat in separate batches to create real held-out tests.</p>
-            <div class="model-actions">
-              <button id="modelStartThumb" class="button button-primary" type="button">Record thumb</button>
-              <button id="modelStartOther" class="button button-secondary" type="button">Record index / other</button>
-            </div>
-            <div class="model-actions">
-              <button id="modelStartPredict" class="button button-secondary" type="button">Predict unlabeled batch</button>
-              <button id="modelFinishBatch" class="button button-quiet" type="button" disabled>Finish batch</button>
-            </div>
-            <div id="modelBatchStatus" class="model-status" aria-live="polite">No model batch active. Start with a labeled batch.</div>
-            <div class="model-rules">
-              <strong>For a useful test</strong>
-              <p>Keep the phone, browser, grip, and gesture type consistent. Aim for 8–15 contacts per batch and at least 5 distinct batches per label. Do not mix fingers inside one labeled batch.</p>
-            </div>
-          </article>
-          <article class="panel model-panel">
-            <span class="panel-kicker">02 / TRAIN & MEASURE</span>
-            <h3>Training set</h3>
-            <div class="model-count-grid">
-              <div><span>CONTACTS</span><strong id="modelExampleCount">0</strong></div>
-              <div><span>THUMB</span><strong id="modelThumbCount">0</strong></div>
-              <div><span>INDEX / OTHER</span><strong id="modelOtherCount">0</strong></div>
-              <div><span>LABELED BATCHES</span><strong id="modelBatchCount">0</strong></div>
-            </div>
-            <div class="model-actions">
-              <button id="modelTrain" class="button button-primary" type="button">Train & evaluate</button>
-              <button id="modelClear" class="button button-quiet" type="button">Clear dataset</button>
-            </div>
-            <div class="model-actions">
-              <button id="modelExport" class="button button-secondary" type="button">Export features JSON</button>
-              <label class="button button-secondary model-import-label" for="modelImport">Import features JSON<input id="modelImport" type="file" accept="application/json,.json"></label>
-            </div>
-            <div id="modelResults" class="model-results" aria-live="polite">No model trained. Collect labeled examples first.</div>
-          </article>
-        </div>
-        <article class="panel model-prediction-panel">
-          <div class="panel-kicker">03 / PREDICTIONS</div>
-          <h3>Recent predictions</h3>
-          <p class="model-copy">Neighbor agreement is a rough model diagnostic, not a calibrated probability or biometric confidence score.</p>
-          <div id="modelPredictions" class="model-predictions" aria-live="polite">No predictions yet.</div>
-        </article>
-        <div class="model-research-note">
-          <strong>Why no preloaded 90% score?</strong>
-          <p>The public <a href="https://github.com/interactionlab/CapFingerId" target="_blank" rel="noopener noreferrer">CapFingerId dataset</a> contains capacitive images; the reported 92%+ result is for left-vs-right thumb classification from those images. This webpage receives standard Pointer/Touch event properties, not those capacitive images, so those model weights cannot be honestly applied here. The model above trains on your labeled browser-visible features and reports only its own held-out-batch result.</p>
-          <p>Reference: <a href="https://doi.org/10.1145/3301275.3302295" target="_blank" rel="noopener noreferrer">Le, Mayer & Henze, IUI 2019</a>.</p>
-        </div>
-      </section>
-
-      <section class="section-wrap protocol-section" aria-labelledby="protocol-title">
-        <div class="section-head"><div class="section-label"><span>07</span><h2 id="protocol-title">Research protocol</h2></div><div class="section-caption">REPEATABLE TRIALS · CONTROLLED CONDITIONS</div></div>
-        <div class="protocol-grid">
-          <article class="panel protocol-panel">
-            <span class="panel-kicker">SUGGESTED SEQUENCE</span><h3>Run the same gesture more than once</h3>
-            <ol class="protocol-list">
-              <li><span>01</span><div><strong>Single tap</strong><p>Tap once without dragging; repeat 5–10 times with a consistent pause.</p></div></li>
-              <li><span>02</span><div><strong>Long press</strong><p>Hold still for approximately two seconds, then release.</p></div></li>
-              <li><span>03</span><div><strong>Slow / fast drag</strong><p>Trace a straight line at two comfortable speeds; keep the start and end zones consistent.</p></div></li>
-              <li><span>04</span><div><strong>Shapes</strong><p>Draw small circles, then straight lines in the same part of the field.</p></div></li>
-              <li><span>05</span><div><strong>Regular repeated taps</strong><p>Tap to a steady rhythm; compare measured intervals, not just visual impressions.</p></div></li>
-              <li><span>06</span><div><strong>Multi-touch</strong><p>Use two contacts only when the device/browser supports it; compare distance changes.</p></div></li>
-            </ol>
-          </article>
-          <article class="panel notes-panel">
-            <span class="panel-kicker">INTERPRETATION NOTES</span><h3>Keep comparisons honest</h3>
-            <details class="note-details" open><summary>Control the environment</summary><p>Use the same device, browser, orientation, page zoom, finger, and gesture instructions. Record interruptions, screen protectors, moisture, and whether the input was a finger, stylus, mouse, or trackpad.</p></details>
-            <details class="note-details"><summary>Compare repeat trials</summary><p>Export each session JSON and label each trial. Compare distributions and sample counts across sessions. A small sample or one unusually fast / slow gesture is not enough to establish a stable pattern.</p></details>
-            <details class="note-details"><summary>Understand timing</summary><p>Event timestamps are browser timing values, not a guarantee of physical sensor scan timing. Main-thread load, coalescing, event dispatch, and browser scheduling can change observed intervals.</p></details>
-            <details class="note-details"><summary>Interpret pressure carefully</summary><p>Some devices report fixed or synthetic pressure (often 0.5 while in contact). Missing, constant, or coarse values can be normal. Dimensions may represent an estimated contact ellipse or implementation-specific values.</p></details>
-            <details class="note-details"><summary>Privacy by default</summary><p>Samples stay in page memory. Export files may contain high-resolution interaction traces; store and share them carefully. This page does not send samples to a server or persist them in local storage.</p></details>
-          </article>
-        </div>
-      </section>
+      <footer class="footer"><span>TOUCH LAB</span><span>AN EXPERIMENT, NOT AUTHENTICATION</span></footer>
     </main>
-
-    <footer class="footer section-wrap">
-      <div class="footer-brand">TOUCH<span>LAB</span> <i>·</i> FIELD STUDY 001</div>
-      <p>Local-first browser research prototype. No fingerprinting claims. No remote collection.</p>
-      <a href="https://github.com/ayush143-maker/touch-lab" target="_blank" rel="noopener noreferrer">SOURCE REPOSITORY ↗</a>
-    </footer>
   </div>
 </body>
 </html>
